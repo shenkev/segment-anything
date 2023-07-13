@@ -1,3 +1,43 @@
+# Kevin's notes for setting up
+
+## Installation and viewing the output of segmentation
+
+```
+conda create -n sam python=3.9
+```
+
+```
+git clone git@github.com:facebookresearch/segment-anything.git
+cd segment-anything; pip install -e .
+```
+
+```
+pip install opencv-python matplotlib jupyter numpy
+```
+
+```
+jupyter notebook ./view_output.ipynb
+```
+
+## Key inference parameters
+
+- points-per-side: [controls granularity of segmentations] The number of points to be sampled
+            along one side of the image. The total number of points is
+            points_per_side**2
+- pred-iou-thresh: [controls number of false positives (extras) versus false negatives (misses)] A filtering threshold in [0,1], using the
+            model's predicted mask quality.
+- stability-score-thresh: [also false positives versus negatives] A filtering threshold in [0,1], using
+            the stability of the mask under changes to the cutoff used to binarize
+            the model's mask predictions.
+- crop-n-layers: If >0, mask prediction will be run again on
+            crops of the image. Sets the number of layers to run, where each
+            layer has 2**i_layer number of image crops.
+- crop-n-points-downscale-factor: The number of points-per-side
+            sampled in layer n is scaled down by crop_n_points_downscale_factor**n.
+- min-mask-region-area: If >0, postprocessing will be applied
+            to remove disconnected regions and holes in masks with area smaller
+            than min_mask_region_area. Requires opencv.
+
 # Segment Anything
 
 **[Meta AI Research, FAIR](https://ai.facebook.com/research/)**

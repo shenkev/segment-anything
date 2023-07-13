@@ -8,6 +8,7 @@ import cv2  # type: ignore
 
 from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
 
+import pickle
 import argparse
 import json
 import os
@@ -226,6 +227,9 @@ def main(args: argparse.Namespace) -> None:
         if output_mode == "binary_mask":
             os.makedirs(save_base, exist_ok=False)
             write_masks_to_folder(masks, save_base)
+            save_file = save_base + ".p"
+            with open(save_file, "wb") as f:
+                pickle.dump(masks, f)
         else:
             save_file = save_base + ".json"
             with open(save_file, "w") as f:
