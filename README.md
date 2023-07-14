@@ -1,9 +1,16 @@
 # Kevin's notes for setting up
 
-## Installation and viewing the output of segmentation
+## Installation on the cluster
+
+Install these things in the home folder on the nyx cluster. Skip the first 2 steps if you already have an environment with pytorch and torchvision.
 
 ```
 conda create -n sam python=3.9
+```
+
+```
+source activate sam
+pip3 install torch torchvision torchaudio
 ```
 
 ```
@@ -15,9 +22,39 @@ cd segment-anything; pip install -e .
 pip install opencv-python matplotlib jupyter numpy
 ```
 
+## SSHing into the GPU node and running a job
+
+From the nyx cluster get onto the GPU machine with,
+
+```
+ssh gpu-1
+```
+
+Start a singularity container. This seems necessary or the GPU machine throws input/output errors.
+
+```
+module add singularity
+export SINGULARITY_BIND="/run,/ptmp,/scratch,/tmp,/opt/ohpc,${HOME}"
+singularity exec --nv /ptmp/containers/python-3.9_pytorch-1.10.0_cuda-11.3.1_latest-2023-02-22-13f58d6202a3.sif bash
+```
+
+You should now be ready to run the model. Here's an example command,
+
+```
+CUDA_VISIBLE_DEVICES=2 python scripts/amg.py --checkpoint checkpoints/sam_vit_h_4b8939.pth --model-type vit_h --points-per-side 8 --output ./out --input images/cat.png
+```
+
+CUDA_VISIBLE_DEVICES sets which GPUs are visible to the python script. There are 4 GPUs on the gpu-1 node.
+
+## Viewing the output
+
+The amg.py script saves the masks to the ./out/{image_name}.p file. The ./view_output.ipynb notebook loads this pickle file to visualize the masks. Start the jupyter notebook with,
+
 ```
 jupyter notebook ./view_output.ipynb
 ```
+
+Then change the paths to the original image and mask pickle file in the notebook.
 
 ## Key inference parameters
 
