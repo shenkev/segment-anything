@@ -14,7 +14,7 @@ pip3 install torch torchvision torchaudio
 ```
 
 ```
-git clone git@github.com:facebookresearch/segment-anything.git
+git clone git@github.com:shenkev/segment-anything.git
 cd segment-anything; pip install -e .
 ```
 
