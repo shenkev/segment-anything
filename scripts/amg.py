@@ -12,6 +12,7 @@ import pickle
 import argparse
 import json
 import os
+from tqdm import tqdm
 from PIL import Image
 import numpy as np
 from typing import Any, Dict, List
@@ -227,7 +228,7 @@ def main(args: argparse.Namespace) -> None:
 
     os.makedirs(args.output, exist_ok=True)
 
-    for t in targets:
+    for t in tqdm(targets):
         print(f"Processing '{t}'...")
         image = cv2.imread(t)
         if image is None:
