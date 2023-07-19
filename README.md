@@ -18,6 +18,8 @@ git clone git@github.com:shenkev/segment-anything.git
 cd segment-anything; pip install -e .
 ```
 
+**Note: if you make any changes to the segment-anything source files, you'll need to reinstall the source files `pip install -e .` or the changes will not be used in the inference code.**
+
 ```
 pip install opencv-python matplotlib jupyter numpy
 ```
