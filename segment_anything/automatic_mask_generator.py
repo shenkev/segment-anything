@@ -114,8 +114,7 @@ class SamAutomaticMaskGenerator:
             "uncompressed_rle",
             "coco_rle",
         ], f"Unknown output_mode {output_mode}."
-        if output_mode == "coco_rle":
-            from pycocotools import mask as mask_utils  # type: ignore # noqa: F401
+        from pycocotools import mask as mask_utils  # type: ignore # noqa: F401
 
         if min_mask_region_area > 0:
             import cv2  # type: ignore # noqa: F401
@@ -171,15 +170,11 @@ class SamAutomaticMaskGenerator:
             )
 
         # Encode masks
-        if self.output_mode == "coco_rle":
-            mask_data["segmentations"] = [coco_encode_rle(rle) for rle in mask_data["rles"]]
-        elif self.output_mode == "binary_mask":
-            mask_data["segmentations"] = [rle_to_mask(rle) for rle in mask_data["rles"]]
-        else:
-            mask_data["segmentations"] = mask_data["rles"]
+        mask_data["segmentations"] = [rle_to_mask(rle) for rle in mask_data["rles"]]
+        # mask_data["segmentations"] = mask_data["rles"]
 
         # Write mask records
-        curr_anns = []
+        mask_anns = []
         for idx in range(len(mask_data["segmentations"])):
             ann = {
                 "segmentation": mask_data["segmentations"][idx],
@@ -190,9 +185,25 @@ class SamAutomaticMaskGenerator:
                 "stability_score": mask_data["stability_score"][idx].item(),
                 "crop_box": box_xyxy_to_xywh(mask_data["crop_boxes"][idx]).tolist(),
             }
-            curr_anns.append(ann)
+            mask_anns.append(ann)
 
-        return curr_anns
+        mask_data["segmentations"] = [coco_encode_rle(rle) for rle in mask_data["rles"]]
+
+        # Write mask records
+        rle_anns = []
+        for idx in range(len(mask_data["segmentations"])):
+            ann = {
+                "segmentation": mask_data["segmentations"][idx],
+                "area": area_from_rle(mask_data["rles"][idx]),
+                "bbox": box_xyxy_to_xywh(mask_data["boxes"][idx]).tolist(),
+                "predicted_iou": mask_data["iou_preds"][idx].item(),
+                "point_coords": [mask_data["points"][idx].tolist()],
+                "stability_score": mask_data["stability_score"][idx].item(),
+                "crop_box": box_xyxy_to_xywh(mask_data["crop_boxes"][idx]).tolist(),
+            }
+            rle_anns.append(ann)
+
+        return mask_anns, rle_anns
 
     def _generate_masks(self, image: np.ndarray) -> MaskData:
         orig_size = image.shape[:2]

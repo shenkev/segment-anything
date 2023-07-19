@@ -12,6 +12,8 @@ import pickle
 import argparse
 import json
 import os
+from PIL import Image
+import numpy as np
 from typing import Any, Dict, List
 
 parser = argparse.ArgumentParser(
@@ -192,6 +194,20 @@ def get_amg_kwargs(args):
     amg_kwargs = {k: v for k, v in amg_kwargs.items() if v is not None}
     return amg_kwargs
 
+def merge_masks(anns):
+    if len(anns) == 0:
+        return
+    sorted_anns = sorted(anns, key=(lambda x: x['area']), reverse=True)
+
+    img = np.ones((sorted_anns[0]['segmentation'].shape[0], sorted_anns[0]['segmentation'].shape[1], 4))
+    img[:,:,3] = 0
+    for ann in sorted_anns:
+        m = ann['segmentation']
+        opacity = 0.7
+        color_mask = np.concatenate([np.random.random(3), [opacity]])
+        img[m] = color_mask
+    
+    return img
 
 def main(args: argparse.Namespace) -> None:
     print("Loading model...")
@@ -219,21 +235,30 @@ def main(args: argparse.Namespace) -> None:
             continue
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        masks = generator.generate(image)
+        mask_anns, rle_anns = generator.generate(image)
 
         base = os.path.basename(t)
         base = os.path.splitext(base)[0]
         save_base = os.path.join(args.output, base)
+
         if output_mode == "binary_mask":
             os.makedirs(save_base, exist_ok=False)
-            write_masks_to_folder(masks, save_base)
+            write_masks_to_folder(mask_anns, save_base)
+
             save_file = save_base + ".p"
             with open(save_file, "wb") as f:
-                pickle.dump(masks, f)
+                pickle.dump(mask_anns, f)
         else:
             save_file = save_base + ".json"
             with open(save_file, "w") as f:
-                json.dump(masks, f)
+                json.dump(rle_anns, f)
+
+            mask_img = merge_masks(mask_anns)
+            mask_img = Image.fromarray((255*mask_img).astype("uint8"))
+            pic = Image.fromarray(image)
+            pic.paste(mask_img, (0, 0), mask_img)
+            pic.save(save_base + ".png")
+
     print("Done!")
 
 
