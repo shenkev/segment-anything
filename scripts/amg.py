@@ -254,10 +254,13 @@ def main(args: argparse.Namespace) -> None:
             with open(save_file, "w") as f:
                 json.dump(rle_anns, f)
 
-            mask_img = merge_masks(mask_anns)
-            mask_img = Image.fromarray((255*mask_img).astype("uint8"))
             pic = Image.fromarray(image)
-            pic.paste(mask_img, (0, 0), mask_img)
+            mask_img = merge_masks(mask_anns)
+
+            if mask_img is not None:  # None when no segments are found
+                mask_img = Image.fromarray((255*mask_img).astype("uint8"))
+                pic.paste(mask_img, (0, 0), mask_img)
+
             pic.save(save_base + ".png")
 
     print("Done!")
