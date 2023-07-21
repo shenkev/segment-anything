@@ -1,7 +1,5 @@
 import os
-import csv
-import json
-import glob
+from tqdm import tqdm
 import argparse
 
 
@@ -26,7 +24,7 @@ def compile_batch(args):
 
     experiment_dirs = [dirpath for dirpath, dirnames, filenames in os.walk(args.input) if not dirnames]
 
-    for d in experiment_dirs:
+    for d in tqdm(experiment_dirs):
         os.system('python scripts/compile_segment_counts.py --input {} --output {}.csv'.format(d, d))        
 
 
